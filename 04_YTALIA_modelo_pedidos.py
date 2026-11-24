@@ -1,7 +1,6 @@
-# Trabajo colaborativo La Fortuna | DIA_1_BASE_Y_ANALISIS | YTALIA
+# Trabajo colaborativo La Fortuna | DIA_1_BASE_Y_ANALISIS | THALIA
 # Archivo de referencia: models/pedido_model.py
 # Propósito: Operaciones del modelo de pedidos.
-# Copia de referencia del proyecto final; no sobrescribir sin revisar y probar.
 
 """Modelo de pedidos: todas las operaciones CRUD se realizan en SQLite."""
 from datetime import datetime
