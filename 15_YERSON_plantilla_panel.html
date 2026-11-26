@@ -1,0 +1,20 @@
+<!-- Trabajo colaborativo La Fortuna | DIA_3_INTEGRACION_PRUEBAS | YERSON
+Archivo de referencia: templates/panel.html
+Propósito: Interfaz del panel web.
+Revisar antes de integrar.
+-->
+{% extends "base.html" %}{% block content %}
+<div class="heading"><div><p class="eyebrow">PANEL DE CONTROL</p><h1>Gestión de pedidos</h1><p>Registra, consulta y controla los pedidos del restaurante.</p></div><a class="button secondary" href="{{ url_for('exportar_json') }}">⇩ Exportar JSON</a></div>
+<section class="stats"><article><span>Pedidos registrados</span><strong>{{ resumen.total }}</strong></article><article><span>Importe acumulado</span><strong>S/ {{ '%.2f'|format(resumen.importe) }}</strong></article><article><span>Pendientes</span><strong>{{ resumen.estados.get('Pendiente',0) }}</strong></article><article><span>En preparación</span><strong>{{ resumen.estados.get('En preparación',0) }}</strong></article></section>
+<div class="layout"><section class="card"><h2>＋ Registrar pedido</h2><form method="post" action="{{ url_for('registrar_pedido') }}" class="form-grid">
+<div class="full"><label>Nombres y apellidos</label><input name="cliente" required maxlength="80" placeholder="Ej. María Fernanda Pérez"></div>
+<div><label>DNI (8 dígitos)</label><input name="dni" required inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" placeholder="48271635"></div>
+<div><label>Cantidad (1 a 50)</label><input type="number" name="cantidad" min="1" max="50" step="1" required value="1"></div>
+<div class="full"><label>Plato</label><select name="producto" required>{% for plato,precio in menu.items() %}<option value="{{ plato }}">{{ plato }} — S/ {{ '%.2f'|format(precio) }}</option>{% endfor %}</select></div>
+<div><label>Forma de pago</label><select name="forma_pago" required>{% for pago in pagos %}<option>{{ pago }}</option>{% endfor %}</select></div>
+<div><label>Observaciones (máx. 200)</label><input name="observacion" maxlength="200" placeholder="Opcional"></div>
+<div class="full"><button>Guardar pedido</button></div></form></section>
+<section class="card"><h2>Estado del servicio</h2><div class="state-row"><span>Pendientes</span><b>{{ resumen.estados.get('Pendiente',0) }}</b></div><div class="state-row"><span>En preparación</span><b>{{ resumen.estados.get('En preparación',0) }}</b></div><div class="state-row"><span>Atendidos</span><b>{{ resumen.estados.get('Atendido',0) }}</b></div><hr><h3>Últimos movimientos</h3>{% for a in auditoria[:6] %}<div class="audit"><b>{{ a.accion }}</b><span>{{ a.entidad }} {{ a.clave_entidad or '' }}</span><small>{{ a.fecha }} · {{ a.usuario }}</small></div>{% else %}<p class="muted">Aún no hay movimientos.</p>{% endfor %}</section></div>
+<section class="card orders"><div class="section-title"><h2>Pedidos registrados</h2><span>{{ filas|length }} registros</span></div>
+<div class="table-scroll"><table><thead><tr><th>Código</th><th>Cliente / DNI</th><th>Pedido</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+{% for p in filas|reverse %}<tr><td><b>{{ p.codigo }}</b><small>{{ p.fecha_registro }}</small></td><td>{{ p.cliente }}<small>DNI: {{ p.dni }}</small></td><td>{{ p.producto }}<small>Cantidad: {{ p.cantidad }} · {{ p.forma_pago }}</small></td><td>S/ {{ '%.2f'|format(p.subtotal) }}</td><td><span class="pill {{ 'done' if p.estado=='Atendido' else 'progress' if p.estado=='En preparación' else 'pending' }}">{{ p.estado }}</span></td><td>{% if p.estado!='Atendido' %}<form method="post" action="{{ url_for('cambiar_estado',codigo=p.codigo) }}" class="inline"><select name="estado">{% for e in estados %}{% if estados.index(e)>estados.index(p.estado) %}<option>{{ e }}</option>{% endif %}{% endfor %}</select><button class="mini">Actualizar</button></form>{% else %}<small>Finalizado</small>{% endif %}<form method="post" action="{{ url_for('eliminar_pedido',codigo=p.codigo) }}" onsubmit="return confirm('¿Eliminar {{ p.codigo }}?')" class="inline"><button class="mini danger">Eliminar</button></form></td></tr>{% else %}<tr><td colspan="6" class="empty">Todavía no hay pedidos registrados.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
